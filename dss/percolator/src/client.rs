@@ -85,22 +85,17 @@ impl Client {
 
     /// Gets a timestamp from a TSO.
     pub fn get_timestamp(&self) -> Result<u64> {
+        let mut result: Result<u64> = Err(Error::Other("Unknown error".to_string()));
         let mut backoff_time_ms = BACKOFF_TIME_MS;
-        let mut result: Result<u64> = Ok(200);
-        let mut i = 0;
-        let mut done = false;
-
-        while i < RETRY_TIMES && !done {            
+        for i in 0..RETRY_TIMES {
             let timestamp_fut = self.tso_client.get_timestamp(&TimestampRequest {});
             let timeout = Timeout::new(timestamp_fut, Duration::from_millis(backoff_time_ms));
-            result = match timeout.wait() {
-                Ok(resp)  => { done = true; Ok(resp.timestamp) },
-                Err(e) =>  Err(e),
+            match timeout.wait() {
+                Ok(resp) => return Ok(resp.timestamp),
+                Err(e)   => result = Err(e),
             };
-            
             backoff_time_ms *= 2;
-            i += 1;
-        };
+        }
 
         result
     }
