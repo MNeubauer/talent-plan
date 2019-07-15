@@ -15,14 +15,18 @@ const TTL: u64 = Duration::from_millis(100).as_nanos() as u64;
 
 #[derive(Clone, Default)]
 pub struct TimestampOracle {
-    // You definitions here if needed.
+    pub timestamp: Arc<Mutex<u64>>,
 }
 
 impl timestamp::Service for TimestampOracle {
     // example get_timestamp RPC handler.
     fn get_timestamp(&self, _: TimestampRequest) -> RpcFuture<TimestampResponse> {
         // Your code here.
-        unimplemented!()
+        let mut timestamp = self.timestamp.lock().unwrap();
+        let resp: TimestampResponse = TimestampResponse { timestamp: *timestamp };
+        *timestamp += 1;
+        println!("providing timestamp of {}", resp.timestamp);
+        Box::new(futures::future::result(Ok(resp)))
     }
 }
 
