@@ -1,9 +1,7 @@
 use crate::service::{TSOClient, TransactionClient};
 use crate::msg::*;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
-//extern crate tokio;
-//use tokio::timer::Timeout;
 use futures::{Async, Future, Poll};
 use futures_timer::Delay;
 use labrpc::*;
